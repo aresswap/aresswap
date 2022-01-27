@@ -16,13 +16,13 @@ import useUSDCPrice from '../../utils/useUSDCPrice'
 //import { useActiveWeb3React } from 'hooks'
 import { FarmWithStakedValue } from 'state/farm/types'
 import { BIG_ZERO } from 'constants/types'
-import BigNumber from 'bignumber.js'
 import { useActiveWeb3React } from 'hooks'
 import { useAppDispatch } from 'state'
 import { fetchFarmUserDataAsync } from 'state/farm'
 import useApproveFarm from 'pages/Farm/hook/useApproveFarm'
 import { useTokenContract } from 'hooks/useContract'
 import ConnectWalletButton from 'components/ConnectWalletButton'
+import BigNumber from 'bignumber.js'
 
 const StatContainer = styled.div`
   display: flex;
@@ -141,15 +141,34 @@ export default function FarmingPoolCard({ farmingPoolInfo }: { farmingPoolInfo: 
   }, [onApprove, dispatch, account, farmingPoolInfo.pid])
   const renderApprovalOrStakeButton = () => {
     return isApproved ? (
-      <StyledInternalLink to={`/farm/${farmingPoolInfo.pid}`} style={{ width: '100%' }}>
-        <ButtonPrimary>{'Deposit LP'}</ButtonPrimary>
-      </StyledInternalLink>
+      <>
+        <StyledInternalLink to={`/farm/${farmingPoolInfo.pid}`} style={{ width: '100%' }}>
+          <ButtonPrimary>{'Deposit LP'}</ButtonPrimary>
+        </StyledInternalLink>
+        {showEarnReward && <ButtonPrimary width={'100%'}>{'Claim Reward'}</ButtonPrimary>}
+        {showWithdraw && <ButtonPrimary width={'100%'}>{'Withdraw'}</ButtonPrimary>}
+      </>
     ) : (
       <ButtonPrimary width={'100%'} disabled={requestedApproval} onClick={handleApprove}>
         {'Enable Contract'}
       </ButtonPrimary>
     )
   }
+
+  const showEarnReward = Boolean(
+    farmingPoolInfo.userData === undefined
+      ? false
+      : farmingPoolInfo.userData.earnings === undefined
+      ? false
+      : farmingPoolInfo.userData.earnings.gt(new BigNumber(0))
+  )
+  const showWithdraw = Boolean(
+    farmingPoolInfo.userData === undefined
+      ? false
+      : farmingPoolInfo.userData.stakedBalance === undefined
+      ? false
+      : farmingPoolInfo.userData.stakedBalance.gt(new BigNumber(0))
+  )
 
   return (
     <Wrapper showBackground={isStaking} bgColor={backgroundColor}>
@@ -171,7 +190,9 @@ export default function FarmingPoolCard({ farmingPoolInfo }: { farmingPoolInfo: 
               ? `0`
               : farmingPoolInfo.userData!.stakedBalance === undefined
               ? `0`
-              : farmingPoolInfo.userData!.stakedBalance!.toString()}
+              : new BigNumber(farmingPoolInfo.userData!.stakedBalance!)
+                  .div(new BigNumber(10).pow(new BigNumber(18)))
+                  .toFixed(10)}
           </TYPE.white>
         </RowBetween>
         <RowBetween>

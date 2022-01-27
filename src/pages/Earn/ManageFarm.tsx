@@ -215,6 +215,7 @@ export default function ManageFarm({
       depositErrorMessage: undefined,
       txHash: undefined
     })
+    console.log(`depositValue ${depositValue}`);
     depositCallback(depositValue)
       .then(hash => {
         setDepositFarmState({
@@ -224,6 +225,7 @@ export default function ManageFarm({
           depositErrorMessage: undefined,
           txHash: hash
         })
+        setDepositValue('0');
       })
       .catch(error => {
         setDepositFarmState({
@@ -386,7 +388,7 @@ export default function ManageFarm({
                 value={depositValue}
                 onUserInput={(value: string) => {
                   setDepositValue(value)
-                  handleDeposit();
+                  
                 }}
                 error={
                   userLiquidityUnstaked === undefined

@@ -1,10 +1,9 @@
-import { MASTER_CHEF_ADDRESS } from 'constants/addresses'
 import { BigNumber, Contract } from 'ethers'
 import { useActiveWeb3React } from 'hooks'
 import { useMemo } from 'react'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { calculateGasMargin } from 'utils'
-import { getMasterChefContract } from 'utils/contractHelper'
+import { useMasterChefContract } from './useContract'
 export enum DepositFarmState {
   INVALID,
   LOADING,
@@ -14,7 +13,7 @@ interface SwapCall {
   contract: Contract
   parameters: {
     pid: number
-    amount: string
+    amount: BigNumber
   }
 }
 
@@ -38,24 +37,24 @@ export function useDepositFarm(
 } {
   const { chainId, library } = useActiveWeb3React()
   const addTransaction = useTransactionAdder()
+  const contract = useMasterChefContract(chainId!);
   return useMemo(() => {
-    if (chainId === undefined) {
-      return { state: DepositFarmState.INVALID, error: 'Chain Id null', callback: null }
+    if (contract === undefined || contract ===null) {
+      return { state: DepositFarmState.INVALID, error: 'contract', callback: null }
     }
-    const contract = getMasterChefContract(MASTER_CHEF_ADDRESS[chainId], library)
     return {
       state: DepositFarmState.VALID,
       error: null,
       callback: async function onDeposit(amount: string): Promise<string> {
-        const args = [pid, amount]
+        const args = [BigNumber.from(pid)._hex, BigNumber.from(amount).mul(BigNumber.from(10).pow(BigNumber.from(18)))._hex]
         const method = 'deposit'
-        const estimatedCalls: EstimatedDepositFarmCall = await contract.estimateGas[method](args)
+        const estimatedCalls: EstimatedDepositFarmCall = await contract.estimateGas[method](args[0],args[1])
           .then(gasEstimate => {
             return {
               call: {
                 parameters: {
                   pid: pid,
-                  amount: amount
+                  amount: BigNumber.from(amount).mul(BigNumber.from(10).pow(BigNumber.from(18)))
                 },
                 contract: contract
               },
@@ -63,12 +62,12 @@ export function useDepositFarm(
             }
           })
           .catch(gasError => {
-            console.debug('Gas estimate failed, trying eth_call to extract error', { args, method , contract})
+            console.debug('Gas estimate failed, trying eth_call to extract error ', { gasError, args, method , contract})
             return {
               call: {
                 parameters: {
                   pid: pid,
-                  amount: amount
+                  amount: BigNumber.from(amount).mul(BigNumber.from(10).pow(BigNumber.from(18)))
                 },
                 contract: contract
               },
@@ -77,10 +76,10 @@ export function useDepositFarm(
           })
         const checkSuccessEstimateGass = (p: EstimatedDepositFarmCall): p is SuccessfulCall =>
           p.hasOwnProperty('gasEstimate')
-        if (checkSuccessEstimateGass(estimatedCalls)) {
+        if (!checkSuccessEstimateGass(estimatedCalls)) {
           throw new Error('Unexpected error. Please contact support: none of the calls threw an error')
         }
-        return contract[method](args, {
+        return contract[method](args[0],args[1], {
           gasLimit: calculateGasMargin(((estimatedCalls as unknown) as SuccessfulCall).gasEstimate)
         })
           .then((response: any) => {

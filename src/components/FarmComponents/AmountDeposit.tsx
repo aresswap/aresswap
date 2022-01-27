@@ -33,7 +33,7 @@ export function AmountDeposit({ value, inputColor, error, onUserInput }: AmountD
       value={value}
       inputColor={error ? 'red' : inputColor}
       onChange={event => {
-        enforcer(event.target.value)
+        enforcer(event.target.value.replace(/,/g, '.'))
       }}
       type="text"
     ></StyledInput>
