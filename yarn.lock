@@ -2843,7 +2843,7 @@
 
 "@uniswap/default-token-list@https://github.com/aresswap/ares-default-token.git":
   version "2.0.0"
-  resolved "https://github.com/aresswap/ares-default-token.git#c6f71d20c94825ec7054cd749f9a563341844682"
+  resolved "https://github.com/aresswap/ares-default-token.git#34beaf21f37c8088bcbb694b4230ff147046bf43"
 
 "@uniswap/governance@^1.0.2":
   version "1.0.2"
@@ -2869,7 +2869,7 @@
 
 "@uniswap/sdk@https://github.com/aresswap/aresswapsdk.git":
   version "1.0.0"
-  resolved "https://github.com/aresswap/aresswapsdk.git#30cd1bf1cc26dedc9740ac300d2ae521ddb4686f"
+  resolved "https://github.com/aresswap/aresswapsdk.git#7da5ed0d4348c0bf4340266b628c9656da219817"
   dependencies:
     "@uniswap/v2-core" "^1.0.0"
     big.js "^5.2.2"

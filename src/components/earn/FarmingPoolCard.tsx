@@ -15,7 +15,7 @@ import useUSDCPrice from '../../utils/useUSDCPrice'
 //import { WAR } from '../../constants'
 //import { useActiveWeb3React } from 'hooks'
 import { FarmWithStakedValue } from 'state/farm/types'
-import { BIG_ZERO } from 'constants/types'
+import { BIG_TEN, BIG_ZERO } from 'constants/types'
 import { useActiveWeb3React } from 'hooks'
 import { useAppDispatch } from 'state'
 import { fetchFarmUserDataAsync } from 'state/farm'
@@ -23,6 +23,7 @@ import useApproveFarm from 'pages/Farm/hook/useApproveFarm'
 import { useTokenContract } from 'hooks/useContract'
 import ConnectWalletButton from 'components/ConnectWalletButton'
 import BigNumber from 'bignumber.js'
+import UnstakingFarmModal from './UnstakingFarm'
 
 const StatContainer = styled.div`
   display: flex;
@@ -90,6 +91,8 @@ export default function FarmingPoolCard({ farmingPoolInfo }: { farmingPoolInfo: 
   const lpContract = useTokenContract(farmingPoolInfo.lpAddresses, true)
   const { onApprove } = useApproveFarm(lpContract!)
 
+  const [ isFarmingModalOpen, setIsFarmingModalOpen ] = useState(false)
+
   console.log(`FarmingPoolCard() farmingPoolInfo ${JSON.stringify(farmingPoolInfo)}`)
 
   const currency0 = unwrappedToken(token0)
@@ -139,21 +142,6 @@ export default function FarmingPoolCard({ farmingPoolInfo }: { farmingPoolInfo: 
       console.error(e)
     }
   }, [onApprove, dispatch, account, farmingPoolInfo.pid])
-  const renderApprovalOrStakeButton = () => {
-    return isApproved ? (
-      <>
-        <StyledInternalLink to={`/farm/${farmingPoolInfo.pid}`} style={{ width: '100%' }}>
-          <ButtonPrimary>{'Deposit LP'}</ButtonPrimary>
-        </StyledInternalLink>
-        {showEarnReward && <ButtonPrimary width={'100%'}>{'Claim Reward'}</ButtonPrimary>}
-        {showWithdraw && <ButtonPrimary width={'100%'}>{'Withdraw'}</ButtonPrimary>}
-      </>
-    ) : (
-      <ButtonPrimary width={'100%'} disabled={requestedApproval} onClick={handleApprove}>
-        {'Enable Contract'}
-      </ButtonPrimary>
-    )
-  }
 
   const showEarnReward = Boolean(
     farmingPoolInfo.userData === undefined
@@ -169,19 +157,96 @@ export default function FarmingPoolCard({ farmingPoolInfo }: { farmingPoolInfo: 
       ? false
       : farmingPoolInfo.userData.stakedBalance.gt(new BigNumber(0))
   )
+  
+  const [{ withdrawFarmError }] = useState<{
+    showWithdrawFarm: boolean
+    farmToWithdraw: FarmWithStakedValue | undefined
+    attemptingTxn: boolean
+    withdrawFarmError: string | undefined
+    txHash: string | undefined
+  }>({
+    showWithdrawFarm: showWithdraw,
+    farmToWithdraw: farmingPoolInfo,
+    attemptingTxn: false,
+    withdrawFarmError: undefined,
+    txHash: undefined
+  })
+  // const handleWithdraw = useCallback(() => {
+  //   if (!withdrawFundFarm) {
+  //     return
+  //   }
+  //   setWithdrawFarmState({
+  //     showWithdrawFarm: showWithdraw,
+  //     farmToWithdraw: farmingPoolInfo,
+  //     attemptingTxn: true,
+  //     withdrawFarmError: undefined,
+  //     txHash: undefined
+  //   })
+  //   withdrawFundFarm(farmingPoolInfo.userData!.stakedBalance!.toString())
+  //     .then(hash => {
+  //       setWithdrawFarmState({
+  //         showWithdrawFarm: showWithdraw,
+  //         farmToWithdraw: farmingPoolInfo,
+  //         attemptingTxn: false,
+  //         withdrawFarmError: undefined,
+  //         txHash: hash
+  //       })
+  //     })
+  //     .catch(e => {
+  //       setWithdrawFarmState({
+  //         showWithdrawFarm: showWithdraw,
+  //         farmToWithdraw: farmingPoolInfo,
+  //         attemptingTxn: false,
+  //         withdrawFarmError: e.message,
+  //         txHash: undefined
+  //       })
+  //     })
+  // }, [stakedAmount])
+
+  const renderApprovalOrStakeButton = () => {
+    return isApproved ? (
+      <>
+        <StyledInternalLink to={`/farm/${farmingPoolInfo.pid}`} style={{ width: '100%' }}>
+          <ButtonPrimary>{'Deposit LP'}</ButtonPrimary>
+        </StyledInternalLink>
+        {showWithdraw && (
+          <RowBetween>
+            {withdrawFarmError !== undefined && <TYPE.error error={true}>{withdrawFarmError}</TYPE.error>}
+            <ButtonPrimary
+              onClick={()=>{
+                setIsFarmingModalOpen(true)
+              }}
+              width={'100%'}
+            >
+              {'Withdraw'}
+            </ButtonPrimary>
+          </RowBetween>
+        )}
+      </>
+    ) : (
+      <ButtonPrimary width={'100%'} disabled={requestedApproval} onClick={handleApprove}>
+        {'Enable Contract'}
+      </ButtonPrimary>
+    )
+  }
 
   return (
     <Wrapper showBackground={isStaking} bgColor={backgroundColor}>
       <CardBGImage desaturate />
       <CardNoise />
-
+      <UnstakingFarmModal
+        farmInfo={farmingPoolInfo}
+        isOpen={isFarmingModalOpen}
+        onDismiss={() => {
+          setIsFarmingModalOpen(false)
+        }}
+      ></UnstakingFarmModal>
       <TopSection>
         <DoubleCurrencyLogo currency0={currency0} currency1={currency1} size={24} />
         <TYPE.white fontWeight={600} fontSize={24} style={{ marginLeft: '8px' }}>
           {currency0.symbol}-{currency1.symbol}
         </TYPE.white>
       </TopSection>
-
       <StatContainer>
         <RowBetween>
           <TYPE.white> Total deposited</TYPE.white>
@@ -203,6 +268,21 @@ export default function FarmingPoolCard({ farmingPoolInfo }: { farmingPoolInfo: 
           <TYPE.white> Multiplier </TYPE.white>
           <TYPE.white>{farmingPoolInfo.multiplier === undefined ? '-' : farmingPoolInfo.multiplier}</TYPE.white>
         </RowBetween>
+        <>
+          {showEarnReward && (
+            <RowBetween>
+              <TYPE.white> Unclaimed Reward WAR </TYPE.white>
+              <TYPE.white>
+                {farmingPoolInfo.userData === undefined
+                  ? '-'
+                  : farmingPoolInfo.userData!.earnings === undefined
+                  ? '-'
+                  : farmingPoolInfo.userData.earnings!.dividedBy(BIG_TEN.pow(18)).toString()}
+              </TYPE.white>
+            </RowBetween>
+          )}
+        </>
+
         <RowBetween>{!account ? <ConnectWalletButton /> : renderApprovalOrStakeButton()}</RowBetween>
       </StatContainer>
     </Wrapper>

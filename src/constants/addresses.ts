@@ -2,6 +2,6 @@ import { ChainId } from "@uniswap/sdk";
 
 
 export const MASTER_CHEF_ADDRESS : {[chainId in ChainId] : string} = {
-    [ChainId.ROPSTEN] : "0x2B9b6566762569a4A7daDa91F00eEb1F09A924F0",
-    [ChainId.MAINNET] : "0x2B9b6566762569a4A7daDa91F00eEb1F09A924F0"
+    [ChainId.ROPSTEN] : "0x023E2aCfe2f55b75E47801Cf4a9551D9A2B0A9AA",
+    [ChainId.MAINNET] : "0x4E2db1300FfdAa052f033b531a7911b478Df8471"
 }

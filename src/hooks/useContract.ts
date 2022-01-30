@@ -131,6 +131,7 @@ export function useSocksController(): Contract | null {
     false
   )
 }
-export function useMasterChefContract(chainId : ChainId) : Contract | null{
+export function useMasterChefContract() : Contract | null{
+  const { chainId } = useActiveWeb3React()
   return useContract(getMasterChefAddress(chainId),MasterChefAbi);
 }

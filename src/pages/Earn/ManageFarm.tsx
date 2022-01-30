@@ -28,6 +28,8 @@ import { BIG_TEN } from 'constants/types'
 import { DeserializedFarm } from 'state/farm/types'
 import { AmountDeposit } from 'components/FarmComponents/AmountDeposit'
 import { useDepositFarm } from 'hooks/useDepositFarm'
+import { useAppDispatch } from 'state'
+import { fetchFarmUserDataAsync } from 'state/farm'
 const PageWrapper = styled(AutoColumn)`
   max-width: 640px;
   width: 100%;
@@ -89,6 +91,7 @@ export default function ManageFarm({
     params: { pid }
   }
 }: RouteComponentProps<{ pid: string }>) {
+  const dispatch = useAppDispatch()
   const { account } = useActiveWeb3React()
   const farmPool = useFarmFromPid(Number(pid))
   //const toggleWalletModal = useWalletModalToggle()
@@ -226,6 +229,9 @@ export default function ManageFarm({
           txHash: hash
         })
         setDepositValue('0');
+        if(account !== undefined && account !== null){
+          dispatch(fetchFarmUserDataAsync({account:account,pids:[farmPool.pid]}))
+        }
       })
       .catch(error => {
         setDepositFarmState({

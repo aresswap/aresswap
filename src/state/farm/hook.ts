@@ -14,8 +14,7 @@ import { abi as ERC20_ABI } from '@uniswap/v2-core/build/ERC20.json'
 import { useActiveWeb3React } from 'hooks'
 import { MASTER_CHEF_ADDRESS } from 'constants/addresses'
 function usePoolLength(): number {
-  const {chainId} = useActiveWeb3React()
-  const MASTER_CHEF_CONTRACT = useMasterChefContract(chainId === undefined ? ChainId.ROPSTEN : chainId)
+  const MASTER_CHEF_CONTRACT = useMasterChefContract()
   const poolLength = useSingleCallResult(MASTER_CHEF_CONTRACT, 'poolLength', [])
   console.log(`usePoolLength() poolLength ${JSON.stringify(poolLength)}`)
   return useMemo(() => {
@@ -29,8 +28,7 @@ function usePoolLength(): number {
   }, [poolLength])
 }
 function useTotalAllocPoint(): number {
-  const {chainId} = useActiveWeb3React()
-  const MASTER_CHEF_CONTRACT = useMasterChefContract(chainId === undefined ? ChainId.ROPSTEN : chainId)
+  const MASTER_CHEF_CONTRACT = useMasterChefContract()
   useMulticallContract()
   const poolLength = useSingleCallResult(MASTER_CHEF_CONTRACT, 'totalAllocPoint', [])
   console.log(`usePoolLength() totalAllocPoint ${JSON.stringify(poolLength)}`)
@@ -161,7 +159,7 @@ function useToken(
   token1: Token
   balanceOfMasterChef: BigNumber
 }[] {
-  const {chainId} = useActiveWeb3React()
+  const { chainId } = useActiveWeb3React()
   const PAIR_INTERFACE = new Interface(IUniswapV2PairABI)
   const token0 = useMultipleContractSingleData(poolAddress, PAIR_INTERFACE, 'token0', [])
   const token0Addresses = token0
@@ -242,7 +240,7 @@ export function useFarmingInfo(): FarmingInfo[] {
     return x
   }, [poolLength])
   console.log(`useFarmingInfo() callInputs ${JSON.stringify(callInputs)}`)
-  const MASTER_CHEF_CONTRACT = useMasterChefContract(chainId === undefined ? ChainId.ROPSTEN : chainId)
+  const MASTER_CHEF_CONTRACT = useMasterChefContract()
   const poolsResults = useSingleContractMultipleData(MASTER_CHEF_CONTRACT, 'poolInfo', callInputs)
   console.log(`useFarmingInfo() poolsResults Length ${poolsResults.length}`)
   console.log(`useFarmingInfo() poolsResults ${JSON.stringify(poolsResults)}`)

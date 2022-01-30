@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { calculateGasMargin } from 'utils'
 import { useMasterChefContract } from './useContract'
-export enum DepositFarmState {
+export enum WithdrawFarmState {
   INVALID,
   LOADING,
   VALID
@@ -27,34 +27,34 @@ interface FailedCall {
   error: Error
 }
 type EstimatedDepositFarmCall = SuccessfulCall | FailedCall
-export function useDepositFarm(
+export function useWithdrawFundFarm(
   pid: number,
   tokenName: string
 ): {
-  state: DepositFarmState
+  state: WithdrawFarmState
   error: string | null
   callback: null | ((amount: string) => Promise<string>)
 } {
-  const { library } = useActiveWeb3React()
+  const { chainId, library } = useActiveWeb3React()
   const addTransaction = useTransactionAdder()
   const contract = useMasterChefContract();
   return useMemo(() => {
     if (contract === undefined || contract ===null) {
-      return { state: DepositFarmState.INVALID, error: 'contract', callback: null }
+      return { state: WithdrawFarmState.INVALID, error: 'contract', callback: null }
     }
     return {
-      state: DepositFarmState.VALID,
+      state: WithdrawFarmState.VALID,
       error: null,
       callback: async function onDeposit(amount: string): Promise<string> {
-        const args = [BigNumber.from(pid)._hex, BigNumber.from(amount).mul(BigNumber.from(10).pow(BigNumber.from(18)))._hex]
-        const method = 'deposit'
+        const args = [BigNumber.from(pid)._hex, BigNumber.from(amount)._hex]
+        const method = 'withdraw'
         const estimatedCalls: EstimatedDepositFarmCall = await contract.estimateGas[method](args[0],args[1])
           .then(gasEstimate => {
             return {
               call: {
                 parameters: {
                   pid: pid,
-                  amount: BigNumber.from(amount).mul(BigNumber.from(10).pow(BigNumber.from(18)))
+                  amount: BigNumber.from(amount)
                 },
                 contract: contract
               },
@@ -67,7 +67,7 @@ export function useDepositFarm(
               call: {
                 parameters: {
                   pid: pid,
-                  amount: BigNumber.from(amount).mul(BigNumber.from(10).pow(BigNumber.from(18)))
+                  amount: BigNumber.from(amount)
                 },
                 contract: contract
               },
@@ -100,5 +100,5 @@ export function useDepositFarm(
           })
       }
     }
-  }, [ library])
+  }, [chainId, library])
 }

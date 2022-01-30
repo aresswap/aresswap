@@ -35,11 +35,11 @@ type ChainTokenList = {
 export const AMPL = new Token(ChainId.MAINNET, '0xD46bA6D942050d489DBd938a2C909A5d5039A161', 9, 'AMPL', 'Ampleforth')
 export const WAR : {[chainId in ChainId] : Token}= {
   [ChainId.MAINNET] : new Token(ChainId.MAINNET,'0xec670571CC55Ac848bdcbe375883dB22D355ea45',18,'WAR','Ares'),
-  [ChainId.ROPSTEN] : new Token(ChainId.ROPSTEN,'0xec670571CC55Ac848bdcbe375883dB22D355ea45',18,'WAR','Ares')
+  [ChainId.ROPSTEN] : new Token(ChainId.ROPSTEN,'0x809Efde6011DD5D641394f03f3F260B43D083a32',18,'WAR','Ares')
 };
 export const dWAR : {[chainId in ChainId] : Token}= {
   [ChainId.MAINNET] : new Token(ChainId.MAINNET,'0xB24c774562c9aa96aE199a8D50bE11a5e3C54E39',18,'dWAR','dWar'),
-[ChainId.ROPSTEN] : new Token(ChainId.ROPSTEN,'0xB24c774562c9aa96aE199a8D50bE11a5e3C54E39',18,'dWAR','dWar')
+[ChainId.ROPSTEN] : new Token(ChainId.ROPSTEN,'0xEa93df45a8e574E2499728A04cbC39387d03cC0C',18,'dWAR','dWar')
 };
 export const DAI = new Token(ChainId.MAINNET, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'Dai Stablecoin')
 export const USDC : {[chainId in ChainId] : Token}= {

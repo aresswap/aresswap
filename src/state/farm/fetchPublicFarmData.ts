@@ -93,12 +93,12 @@ const fetchFarm = async (farm: SerializedFarm): Promise<PublicFarmData> => {
     pid || pid === 0
       ? await multicall(masterchefABI, [
           {
-            address: getMasterChefAddress(NETWORK_CHAIN_ID),
+            address: getMasterChefAddress(NETWORK_CHAIN_ID) === undefined ? '0x' :getMasterChefAddress(NETWORK_CHAIN_ID)!,
             name: 'poolInfo',
             params: [pid]
           },
           {
-            address: getMasterChefAddress(NETWORK_CHAIN_ID),
+            address: getMasterChefAddress(NETWORK_CHAIN_ID) === undefined ? '0x' : getMasterChefAddress(NETWORK_CHAIN_ID)!,
             name: 'totalAllocPoint'
           }
         ])

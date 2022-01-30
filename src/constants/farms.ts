@@ -42,7 +42,7 @@ const farms: SerializedFarmConfig[] = [
   },
   {
     lpSymbol: 'METIS-WAR',
-    lpAddresses: '0x1b4dA3AB2c909F53891D8E6BE09Ff43f5e543D6d',
+    lpAddresses: '0x3E107323D621C708289aDBbC7D68112700005ea4',
     pid: 2,
     baseToken: {
       address: WRAPPED_TOKEN[43113].address,
